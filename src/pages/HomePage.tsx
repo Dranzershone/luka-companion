@@ -126,7 +126,7 @@ const HomePage = () => {
               © 2024 Luka. Your mental wellness matters.
             </p>
             <p className="text-xs text-muted-foreground">
-              If you're in crisis, please call <span className="font-medium text-secondary">988</span> (Suicide & Crisis Lifeline)
+              If you're in crisis, please call <span className="font-medium text-secondary">112</span> (Emergency Line)
             </p>
           </div>
         </footer>
