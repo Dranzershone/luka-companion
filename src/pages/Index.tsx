@@ -1,11 +1,17 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Header from "@/components/luka/Header";
+import ChatContainer from "@/components/luka/ChatContainer";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex h-screen flex-col bg-background">
+      {/* Subtle background pattern */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sage-50 via-transparent to-transparent opacity-60" />
+      
+      <div className="relative z-10 flex h-full flex-col">
+        <Header />
+        <main className="flex-1 overflow-hidden">
+          <ChatContainer />
+        </main>
       </div>
     </div>
   );
