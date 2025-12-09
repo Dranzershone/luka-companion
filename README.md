@@ -1,73 +1,97 @@
-# Welcome to your Lovable project
+# 🤖 Luka: The AI Wellness Companion
 
-## Project info
+**Luka** is a full-stack, empathetic companion chatbot designed to provide supportive conversation, motivation, and mood-based music recommendations for users experiencing sadness or demotivation. Built with modern, asynchronous technologies, Luka demonstrates expertise in conversational AI design, API integration, and full-stack deployment.
 
-**URL**: https://lovable.dev/projects/c1d87c88-059b-4bd9-a62d-bb12e76d97f0
+## 🚀 Features
 
-## How can I edit this code?
+  * **Empathetic Conversation:** Utilizes **Google Gemini 1.5 Flash** with a defined system persona for high-quality, reflective, and supportive dialogues.
+  * **Safety First (Crisis Detection):** Implements a **hard-coded keyword filter** to immediately override the AI response and provide the **988 Crisis Lifeline** for user safety. (A commitment to **Responsible AI**).
+  * **Mood-Based Music Recommendation (Future Feature):** Integration ready to map detected user sentiment (e.g., sadness) to a calculated uplift goal (e.g., high valence, moderate energy) and retrieve a suitable playlist via the **Spotify API (Spotipy)**.
+  * **Asynchronous API:** Built with **FastAPI** to handle high concurrency, ensuring quick response times for a smooth user experience.
+  * **Professional Frontend:** Modern, calm, and accessible user interface built with **React** and **Tailwind CSS**.
 
-There are several ways of editing your application.
+## 💻 Tech Stack
 
-**Use Lovable**
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend (Client)** | **React (Vite/TSX)**, Tailwind CSS | The responsive, single-page application (SPA) UI. |
+| **Backend (API)** | **Python 3.12**, **FastAPI** | High-performance, asynchronous REST API server. |
+| **AI Core** | **Google Gemini 1.5 Flash** | Large Language Model (LLM) for conversation generation. |
+| **External APIs** | **Spotify Web API** (via `Spotipy`) | Music search and playlist recommendation. |
+| **Environment** | **`python-dotenv`** | Secure management of API keys and secrets. |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c1d87c88-059b-4bd9-a62d-bb12e76d97f0) and start prompting.
+## 🛠️ Installation and Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+### **1. Clone the Repository**
 
-**Use your preferred IDE**
+```bash
+git clone <your-repository-url>
+cd Luka-Project
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### **2. Backend Setup (Python/FastAPI)**
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+It is critical to use a virtual environment to manage dependencies.
 
-Follow these steps:
+```bash
+# Navigate to the backend directory
+cd backend
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Create and activate a new virtual environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1 # Use 'source .venv/bin/activate' on Linux/Mac
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+pip install -r requirements.txt
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### **3. API Key Configuration**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Create a file named **`.env`** inside the `backend/` folder and populate it with your credentials:
+
+```env
+# Get keys from Google AI Studio and Spotify Developer Dashboard
+GOOGLE_API_KEY="AIzaSy..."
+SPOTIPY_CLIENT_ID="your_spotify_client_id"
+SPOTIPY_CLIENT_SECRET="your_spotify_client_secret"
+```
+
+### **4. Frontend Setup (React/Node)**
+
+```bash
+# Navigate to the frontend directory
+cd ../luka-companion-main
+
+# Install Node dependencies (assuming npm/yarn/pnpm is installed)
+npm install
+```
+
+## ▶️ Running the Application
+
+You must run the backend and frontend simultaneously, ideally in two separate terminals within the VS Code root folder.
+
+### **Terminal 1: Start the Backend (API Server)**
+
+```bash
+cd backend
+.\.venv\Scripts\Activate.ps1
+python main.py
+```
+
+*(The server will run on `http://127.0.0.1:8000`)*
+
+### **Terminal 2: Start the Frontend (Web Client)**
+
+```bash
+cd luka-companion-main
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+*(The client will usually open at `http://localhost:5173`)*
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🤝 Next Steps and Future Improvements
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/c1d87c88-059b-4bd9-a62d-bb12e76d97f0) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+  * **Memory Persistence:** Implement a PostgreSQL database to store conversation history and user mood data, moving the `chat_session` from global memory to a database for multi-user support.
+  * **Advanced Sentiment:** Integrate a specialized model (e.g., Hugging Face) for nuanced emotion detection beyond keywords (e.g., distinguishing anxiety from sadness).
+  * **User Authentication:** Add login/user profiles to personalize the companion experience.
+  * **Deployment:** Containerize the backend using **Docker** and deploy the full stack to a cloud platform (e.g., Render or AWS) for production readiness.
