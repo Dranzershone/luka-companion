@@ -16,7 +16,7 @@
 | :--- | :--- | :--- |
 | **Frontend (Client)** | **React (Vite/TSX)**, Tailwind CSS | The responsive, single-page application (SPA) UI. |
 | **Backend (API)** | **Python 3.12**, **FastAPI** | High-performance, asynchronous REST API server. |
-| **AI Core** | **Google Gemini 1.5 Flash** | Large Language Model (LLM) for conversation generation. |
+| **AI Core** | **Google Gemini 2.5 Flash** | Large Language Model (LLM) for conversation generation. |
 | **External APIs** | **Spotify Web API** (via `Spotipy`) | Music search and playlist recommendation. |
 | **Environment** | **`python-dotenv`** | Secure management of API keys and secrets. |
 
