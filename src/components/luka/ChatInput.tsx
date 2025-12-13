@@ -9,7 +9,7 @@ const ChatInput = ({ onSend }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // ✅ critical: prevents GET /chat
+    e.preventDefault(); 
     if (!message.trim()) return;
 
     onSend(message.trim());
