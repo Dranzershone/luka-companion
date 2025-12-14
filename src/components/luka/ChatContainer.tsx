@@ -1,3 +1,4 @@
+// src/ChatContainer.tsx
 import { useState, useRef, useEffect } from "react";
 import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
@@ -10,6 +11,15 @@ interface Message {
   isUser: boolean;
 }
 
+interface BackendResponse {
+  reply?: string;
+  mood?: string;
+  session_id?: string;
+  music?: { url?: string } | null;
+  history?: Array<{ role: string; text: string }>;
+  [key: string]: unknown;
+}
+
 const initialMessages: Message[] = [
   {
     id: 1,
@@ -18,18 +28,29 @@ const initialMessages: Message[] = [
   },
 ];
 
-const lukaResponses = [
-  "I hear you. It takes courage to share how you're feeling. Would you like to explore that a bit more?",
-  "Thank you for opening up. Remember, every feeling is valid. What do you think triggered this emotion?",
-  "I'm here with you. Sometimes just acknowledging our feelings is the first step toward understanding them.",
-  "That sounds challenging. Would you like to try a quick breathing exercise together, or would you prefer to talk more?",
-  "I appreciate you trusting me with this. Let's take this one step at a time. What feels most pressing right now?",
-];
+/**
+ * Type guard to safely assert that an unknown value is the expected music object.
+ * This avoids using `any` and satisfies @typescript-eslint/no-explicit-any.
+ */
+function isMusicObject(obj: unknown): obj is { url: string } {
+  if (!obj || typeof obj !== "object") return false;
+  const r = obj as Record<string, unknown>;
+  return typeof r.url === "string";
+}
 
 const ChatContainer = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isTyping, setIsTyping] = useState(false);
+  const [moodRecommendation, setMoodRecommendation] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // session id persisted in localStorage so conversation continues across reloads
+  const sessionIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const stored = localStorage.getItem("luka_session_id");
+    if (stored) sessionIdRef.current = stored;
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,29 +60,95 @@ const ChatContainer = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (text: string) => {
-    const newMessage: Message = {
+  // typed access to Vite env (no any)
+  const configuredUrl = import.meta.env.VITE_API_URL;
+  const API_URL = configuredUrl ?? "http://127.0.0.1:8000/chat";
+
+  
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.info("[ChatContainer] API_URL =", API_URL, "(VITE_API_URL:", configuredUrl, ")");
+  }, [API_URL, configuredUrl]);
+
+  const handleSend = async (text: string) => {
+    const userMessage: Message = {
       id: Date.now(),
       text,
       isUser: true,
     };
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    // Simulate Luka's response
-    setTimeout(() => {
+    try {
+      const payload: { message: string; session_id?: string } = { message: text };
+      if (sessionIdRef.current) payload.session_id = sessionIdRef.current;
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        // attempt to read body text for debugging
+        let serverBody: string | null = null;
+        try {
+          serverBody = await response.text();
+        } catch (err) {
+          // ignore
+        }
+        const errMsg =
+          `Server responded ${response.status} ${response.statusText}` +
+          (serverBody ? `: ${serverBody}` : "");
+        throw new Error(errMsg);
+      }
+
+      const data = (await response.json()) as BackendResponse;
+
       setIsTyping(false);
-      const randomResponse =
-        lukaResponses[Math.floor(Math.random() * lukaResponses.length)];
+
+      const replyText =
+        typeof data.reply === "string" ? data.reply : "Sorry — I couldn't generate a reply right now.";
+      const lukaReply: Message = {
+        id: Date.now() + 1,
+        text: replyText,
+        isUser: false,
+      };
+
+      setMessages((prev) => [...prev, lukaReply]);
+
+      if (data.session_id && typeof data.session_id === "string") {
+        sessionIdRef.current = data.session_id;
+        try {
+          localStorage.setItem("luka_session_id", data.session_id);
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+
+      // LINT-SAFE: use type guard instead of casting to `any`
+      if (data.music && isMusicObject(data.music)) {
+        setMoodRecommendation(data.music.url);
+      } else {
+        // clear previous recommendation when none returned
+        setMoodRecommendation(null);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Connection Error:", error);
+      setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
-          text: randomResponse,
+          text: "Oops — I'm having trouble connecting right now. Please check your network or try again later.",
           isUser: false,
         },
       ]);
-    }, 1500 + Math.random() * 1000);
+    }
   };
 
   return (
@@ -75,15 +162,9 @@ const ChatContainer = () => {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="mx-auto flex max-w-2xl flex-col gap-4">
           {messages.map((message) => (
-            <ChatBubble
-              key={message.id}
-              message={message.text}
-              isUser={message.isUser}
-            />
+            <ChatBubble key={message.id} message={message.text} isUser={message.isUser} />
           ))}
-          {isTyping && (
-            <ChatBubble message="" isUser={false} isTyping />
-          )}
+          {isTyping && <ChatBubble message="" isUser={false} isTyping />}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -91,7 +172,7 @@ const ChatContainer = () => {
       {/* Mood Widget */}
       <div className="flex-shrink-0 px-4 pb-4">
         <div className="mx-auto max-w-2xl">
-          <MoodWidget />
+          <MoodWidget recommendationUrl={moodRecommendation} />
         </div>
       </div>
 
